@@ -1,0 +1,127 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+}
+
+// Enums
+
+enum Role {
+  ADMIN
+  AUTHOR
+  PARTICIPANT
+}
+
+enum QuizStatus {
+  DRAFT
+  PUBLISHED
+  INACTIVE
+  ARCHIVED
+}
+
+enum QuestionType {
+  MC_EASY      
+  MC_MEDIUM    
+  MC_HARD      
+  TRUE_FALSE   
+}
+
+// Models
+
+model User {
+  id        String   @id @default(uuid())
+  name      String
+  username  String   @unique
+  password  String   
+  phone     String?   
+  role      Role     @default(PARTICIPANT)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  
+  quizzes   Quiz[]         
+  attempts  QuizAttempt[]  
+
+  @@map("users")
+}
+
+model Quiz {
+  id                 String     @id @default(uuid())
+  title              String
+  slug               String     @unique
+  description        String?    @db.Text
+  quizCode           String     @unique
+  pin                String?    
+  status             QuizStatus @default(DRAFT)
+  timeLimit          Int?       
+  startDate          DateTime?  
+  endDate            DateTime?  
+  showScore          Boolean    @default(true) 
+  randomizeQuestions Boolean    @default(false)
+  maxAttempts        Int        @default(1)    
+  createdAt          DateTime   @default(now())
+  updatedAt          DateTime   @updatedAt
+
+  authorId           String
+  author             User       @relation(fields: [authorId], references: [id])
+  questions          Question[]
+  attempts           QuizAttempt[]
+
+  @@map("quizzes")
+}
+
+model Question {
+  id            String       @id @default(uuid())
+  quizId        String
+  quiz          Quiz         @relation(fields: [quizId], references: [id], onDelete: Cascade)
+  type          QuestionType
+  content       String       @db.Text 
+  imageUrl      String?      
+  
+  options       Option[]
+  answers       Answer[]   
+
+  @@map("questions")  
+}
+
+model Option {
+  id          String   @id @default(uuid())
+  questionId  String
+  question    Question @relation(fields: [questionId], references: [id], onDelete: Cascade)
+  content     String   @db.Text 
+  imageUrl    String?  
+  isCorrect   Boolean  @default(false) 
+  
+  answers     Answer[] 
+
+  @@map("options")
+}
+
+model QuizAttempt {
+  id             String    @id @default(uuid())
+  quizId         String
+  participantId  String
+  quiz           Quiz      @relation(fields: [quizId], references: [id], onDelete: Cascade)
+  participant    User      @relation(fields: [participantId], references: [id], onDelete: Cascade)
+  score          Float?    
+  startedAt      DateTime  @default(now())
+  completedAt    DateTime? 
+  
+  answers        Answer[]
+
+  @@map("quiz_attempts")
+}
+
+model Answer {
+  id            String      @id @default(uuid())
+  attemptId     String
+  attempt       QuizAttempt @relation(fields: [attemptId], references: [id], onDelete: Cascade)
+  questionId    String
+  question      Question    @relation(fields: [questionId], references: [id])
+  optionId      String?     
+  option        Option?     @relation(fields: [optionId], references: [id])
+  isCorrect     Boolean     
+
+  @@map("answers")
+}
