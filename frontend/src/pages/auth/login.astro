@@ -1,0 +1,10 @@
+---
+import MainLayout from '../../layouts/MainLayout.astro';
+import LoginForm from '../../components/auth/LoginForm.jsx';
+---
+
+<MainLayout title="Masuk | Qurio Platform">
+  <main>
+    <LoginForm client:load />
+  </main>
+</MainLayout>

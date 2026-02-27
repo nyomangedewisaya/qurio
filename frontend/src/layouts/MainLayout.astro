@@ -1,0 +1,18 @@
+---
+const { title = "Qurio - Platform Kuis Digital Modern" } = Astro.props;
+import '../styles/global.css';
+---
+
+<html lang="id">
+	<head>
+		<meta charset="utf-8" />
+		<link rel="icon" type="image/png" href="/qurio.png" />
+		<meta name="viewport" content="width=device-width" />
+		<meta name="generator" content={Astro.generator} />
+		<title>{title}</title>
+		<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+	</head>
+	<body class="bg-white text-slate-900 font-['Inter'] antialiased">
+		<slot />
+	</body>
+</html>

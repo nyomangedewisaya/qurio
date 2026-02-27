@@ -1,17 +1,55 @@
 ---
-
+import MainLayout from '../layouts/MainLayout.astro';
+import { Hero, Features, ComingSoon } from '../components/LandingSections.jsx';
 ---
 
-<html lang="en">
-	<head>
-		<meta charset="utf-8" />
-		<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-		<link rel="icon" href="/favicon.ico" />
-		<meta name="viewport" content="width=device-width" />
-		<meta name="generator" content={Astro.generator} />
-		<title>Astro</title>
-	</head>
-	<body>
-		<h1>Astro</h1>
-	</body>
-</html>
+<MainLayout title="Qurio - Platform Kuis Digital Modern">
+  <header class="fixed top-4 left-1/2 -translate-x-1/2 w-[95%] max-w-7xl z-50 transition-all duration-300">
+    <nav class="glass-nav rounded-2xl px-6 py-3 flex justify-between items-center">
+      <div class="flex items-center gap-2">
+        <img src="/qurio.png" alt="Qurio Logo" class="h-12 w-auto object-contain" />
+      </div>
+
+      <div class="hidden md:flex items-center gap-8">
+        <a href="#fitur" class="text-sm font-semibold text-slate-500 hover:text-brand-600 transition-colors">Fitur</a>
+        <a href="#mockup" class="text-sm font-semibold text-slate-500 hover:text-brand-600 transition-colors">Preview</a>
+        <div class="w-px h-4 bg-slate-300"></div>
+        <a href="/login" class="text-sm font-semibold text-slate-800 hover:text-brand-600 transition-colors">Masuk</a>
+        <a href="/register" class="bg-slate-900 text-white px-6 py-2.5 rounded-xl text-sm font-bold hover:bg-brand-600 transition-all active:scale-95 shadow-md">
+          Daftar Gratis
+        </a>
+      </div>
+    </nav>
+  </header>
+
+  <main>
+    <Hero client:load />
+    
+    <Features client:load />
+
+    <section id="mockup" class="py-20 relative z-10">
+      <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="glass-card rounded-[2.5rem] p-4 sm:p-6 relative overflow-hidden group">
+          <div class="flex items-center gap-2 mb-4 px-2">
+            <div class="w-3 h-3 rounded-full bg-slate-300"></div>
+            <div class="w-3 h-3 rounded-full bg-slate-300"></div>
+            <div class="w-3 h-3 rounded-full bg-slate-300"></div>
+            <div class="ml-4 h-5 w-32 bg-slate-200/50 rounded-md hidden sm:block"></div>
+          </div>
+          <div class="bg-slate-100 rounded-3xl aspect-video flex flex-col items-center justify-center border border-slate-200 shadow-inner overflow-hidden relative">
+             <div class="w-20 h-20 bg-white rounded-full shadow-sm flex items-center justify-center text-brand-500 mb-4 transform group-hover:scale-110 transition-transform duration-500">
+                <svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12V7a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h7"/><path d="M16 5V3"/><path d="M8 5V3"/><path d="M3 9h16"/><path d="M15 15l2 2 4-4"/></svg>
+             </div>
+             <p class="text-slate-400 font-bold uppercase tracking-widest text-sm">Preview Dashboard</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <ComingSoon client:load />
+  </main>
+
+  <footer class="py-10 text-center relative z-10 border-t border-slate-200/50 mt-10">
+    <p class="text-sm font-semibold text-slate-400">© 2026 Qurio Platform. Crafted for better education.</p>
+  </footer>
+</MainLayout>
