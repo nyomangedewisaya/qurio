@@ -1,30 +1,52 @@
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { User, Lock, Eye, EyeOff, ArrowRight } from 'lucide-react';
+import { authService } from '../../services/auth.service';
 
 export default function LoginForm() {
   const [showPassword, setShowPassword] = useState(false);
   const [formData, setFormData] = useState({ username: '', password: '' });
   const [errors, setErrors] = useState({});
 
-  const handleValidation = (e) => {
+  const handleValidation = async (e) => {
     e.preventDefault();
     let newErrors = {};
 
-    if (!formData.username.trim()) {
-      newErrors.username = 'Username wajib diisi.';
-    }
-    if (!formData.password) {
-      newErrors.password = 'Password wajib diisi.';
-    } else if (formData.password.length < 6) {
-      newErrors.password = 'Password minimal 6 karakter.';
-    }
+    if (!formData.username.trim()) newErrors.username = 'Username wajib diisi.';
+    if (!formData.password) newErrors.password = 'Password wajib diisi.';
 
     setErrors(newErrors);
 
     if (Object.keys(newErrors).length === 0) {
-      console.log('Login diproses...', formData);
-      // TODO: Panggil fungsi fetch() ke API backend di sini
+      try {
+        const response = await authService.login({
+          username: formData.username,
+          password: formData.password
+        });
+
+        const token = response.token;
+        const user = response.data; 
+
+        if (!user || !user.username) {
+          throw new Error("Gagal membaca profil pengguna dari respons server.");
+        }
+
+        localStorage.setItem('qurio_token', token);
+        localStorage.setItem('qurio_user', JSON.stringify(user));
+
+        console.log('Login berhasil:', user.username);
+
+        if (user.role === 'ADMIN') {
+          window.location.href = '/admin/dashboard';
+        } else if (user.role === 'AUTHOR') {
+          window.location.href = '/author/dashboard';
+        } else {
+          window.location.href = '/'; 
+        }
+
+      } catch (error) {
+        setErrors({ ...newErrors, password: error.message || 'Login gagal. Periksa kembali kredensial Anda.' });
+      }
     }
   };
 

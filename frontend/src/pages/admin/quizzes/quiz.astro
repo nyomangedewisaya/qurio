@@ -1,0 +1,15 @@
+---
+import MainLayout from '../../../layouts/MainLayout.astro';
+import DashboardShell from '../../../components/admin/dashboard/DashboardShell.jsx';
+import QuizManagement from '../../../components/admin/quizzes/QuizManagement.jsx';
+---
+
+<MainLayout title="Manajemen Kuis Global | Admin Qurio">
+  
+  <DashboardShell client:only="react" role="ADMIN" currentPath={Astro.url.pathname}>
+    
+    <QuizManagement client:load />
+
+  </DashboardShell>
+
+</MainLayout>

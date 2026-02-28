@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Menu, ChevronLeft, ChevronRight, LogOut, Bell } from "lucide-react";
-import { getMenuItems } from "../../utils/navigation";
+import { getMenuItems } from "../../../utils/navigation";
 
 export default function DashboardShell({ children, role = "ADMIN", currentPath = "/admin/dashboard" }) {
   const [isMobileOpen, setIsMobileOpen] = useState(false);
@@ -32,7 +32,16 @@ export default function DashboardShell({ children, role = "ADMIN", currentPath =
 
       <div className="flex-1 overflow-y-auto py-6 px-3 space-y-1.5 scrollbar-hide">
         {menuItems.map((item) => {
-          const isActive = currentPath === item.path;
+          const normalizedCurrent = currentPath.replace(/\/$/, "");
+          const normalizedMenu = item.path.replace(/\/$/, "");
+          const isQuizSection = normalizedMenu.includes('/admin/quizzes') && normalizedCurrent.includes('/admin/quizzes');
+          const isDashboard = normalizedMenu === '/admin/dashboard' || normalizedMenu === '/author/dashboard';
+
+          const isActive = 
+            normalizedCurrent === normalizedMenu || 
+            isQuizSection || 
+            (!isDashboard && normalizedCurrent.startsWith(normalizedMenu));
+
           const Icon = item.icon;
 
           return (
@@ -168,7 +177,19 @@ export default function DashboardShell({ children, role = "ADMIN", currentPath =
 
         <main className="flex-1 overflow-y-auto p-4 sm:p-6 lg:p-8 relative">
           <div className="absolute top-0 right-0 w-125 h-125 bg-brand-50/50 rounded-full blur-[120px] pointer-events-none -z-10 mix-blend-multiply"></div>
-          {children}
+          
+          <motion.div
+            initial={{ opacity: 0, y: 15 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ 
+              duration: 0.5, 
+              ease: [0.25, 0.1, 0.25, 1],  
+              delay: 0.1 
+            }}
+            className="w-full h-full"
+          >
+            {children}
+          </motion.div>
         </main>
       </div>
     </div>

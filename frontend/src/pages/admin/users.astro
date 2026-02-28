@@ -1,0 +1,15 @@
+---
+import MainLayout from '../../layouts/MainLayout.astro';
+import DashboardShell from '../../components/admin/dashboard/DashboardShell.jsx';
+import UserManagement from '../../components/admin/users/UserManagement.jsx';
+---
+
+<MainLayout title="Manajemen Pengguna | Admin Qurio">
+  
+  <DashboardShell client:only="react" role="ADMIN" currentPath="/admin/users">
+    
+    <UserManagement client:load />
+
+  </DashboardShell>
+
+</MainLayout>

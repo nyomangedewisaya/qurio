@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { User, Lock, Eye, EyeOff, ArrowRight, Phone, BookOpen, PenTool } from 'lucide-react';
+import { authService } from '../../services/auth.service';
 
 export default function RegisterForm() {
   const [showPassword, setShowPassword] = useState(false);
@@ -8,7 +9,7 @@ export default function RegisterForm() {
   const [formData, setFormData] = useState({ name: '', username: '', phone: '', password: '' });
   const [errors, setErrors] = useState({});
 
-  const handleValidation = (e) => {
+  const handleValidation = async (e) => {
     e.preventDefault();
     let newErrors = {};
 
@@ -26,8 +27,34 @@ export default function RegisterForm() {
     setErrors(newErrors);
 
     if (Object.keys(newErrors).length === 0) {
-      console.log('Register diproses...', { ...formData, role });
-      // TODO: Panggil fungsi fetch() API Register
+      try {
+        const response = await authService.register({
+          name: formData.name,
+          username: formData.username,
+          password: formData.password,
+          role: role,
+          phone: role === 'AUTHOR' ? formData.phone : undefined
+        });
+
+        const token = response.token;
+        const user = response.data;
+        
+        if (token && user) {
+          localStorage.setItem('qurio_token', token);
+          localStorage.setItem('qurio_user', JSON.stringify(user));
+        }
+
+        console.log('Registrasi berhasil:', user?.username);
+
+        if (user?.role === 'AUTHOR') {
+          window.location.href = '/author/dashboard';
+        } else {
+          window.location.href = '/';
+        }
+
+      } catch (error) {
+        setErrors({ ...newErrors, username: error.message || 'Registrasi gagal. Silakan coba lagi.' });
+      }
     }
   };
 

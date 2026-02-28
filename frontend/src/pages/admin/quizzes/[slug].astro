@@ -1,0 +1,16 @@
+---
+export const prerender = false;
+
+import MainLayout from '../../../layouts/MainLayout.astro';
+import QuizDetail from '../../../components/admin/quizzes/QuizDetail.jsx';
+
+const { slug } = Astro.params;
+---
+
+<MainLayout title="Detail Kuis | Admin Qurio">
+  
+  <div class="min-h-screen bg-slate-50/50 py-8 px-4 sm:px-6 lg:px-8">
+    <QuizDetail client:load slug={slug} />
+  </div>
+
+</MainLayout>
