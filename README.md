@@ -1,8 +1,6 @@
 <div align="center">
 
-  <p><img width="180" height="180" alt="Qurio Logo" src="https://ui-avatars.com/api/?name=Q&background=0ea5e9&color=fff&size=256&rounded=true&font-size=0.6" /></p>
-    
-  <b>Arsitektur backend yang mutakhir, aman, dan berkinerja tinggi untuk Platform Manajemen Pembelajaran & Kuis modern.</b>
+  <img width="300" height="300" alt="qurio" src="https://github.com/user-attachments/assets/5d68d0b1-db1b-4460-87ce-a7277e9064fb" />
 
   <p>
     <img src="https://img.shields.io/badge/Node.js-339933?style=for-the-badge&logo=nodedotjs&logoColor=white" alt="Node.js" />
@@ -347,7 +345,7 @@ qurio-backend/
       <th style="padding: 12px; border: 1px solid #ddd; text-align: left;">Method</th>
       <th style="padding: 12px; border: 1px solid #ddd; text-align: left;">Endpoint</th>
       <th style="padding: 12px; border: 1px solid #ddd; text-align: left;">Akses</th>
-      <th style="padding: 12px; border: 1px solid #ddd; text-align: left;">Body / Params</th>
+      <th style="padding: 12px; border: 1px solid #ddd; text-align: left;">Body / Params / Query</th>
       <th style="padding: 12px; border: 1px solid #ddd; text-align: left;">Deskripsi</th>
     </tr>
   </thead>
@@ -357,25 +355,87 @@ qurio-backend/
       <td style="padding: 8px; border: 1px solid #ddd;"><code>/dashboard</code></td>
       <td style="padding: 8px; border: 1px solid #ddd;">Admin</td>
       <td style="padding: 8px; border: 1px solid #ddd;">-</td>
-      <td style="padding: 8px; border: 1px solid #ddd;">Memantau metrik global (total pengguna, kuis, pengerjaan).</td>
+      <td style="padding: 8px; border: 1px solid #ddd;">Memantau metrik global (total pengguna, kuis, tren pengerjaan).</td>
     </tr>
     <tr>
-      <td style="padding: 8px; border: 1px solid #ddd;"><code>DELETE</code></td>
-      <td style="padding: 8px; border: 1px solid #ddd;"><code>/quizzes/:quizId</code></td>
+      <td style="padding: 8px; border: 1px solid #ddd;"><code>GET</code></td>
+      <td style="padding: 8px; border: 1px solid #ddd;"><code>/users</code></td>
       <td style="padding: 8px; border: 1px solid #ddd;">Admin</td>
-      <td style="padding: 8px; border: 1px solid #ddd;"><i>Param</i>: <code>quizId</code></td>
-      <td style="padding: 8px; border: 1px solid #ddd;">Menghapus paksa kuis yang melanggar aturan.</td>
+      <td style="padding: 8px; border: 1px solid #ddd;"><i>Query</i>: <code>page</code>, <code>limit</code>, <code>q</code>, <code>role</code></td>
+      <td style="padding: 8px; border: 1px solid #ddd;">Mendapatkan daftar seluruh pengguna (mendukung paginasi & filter).</td>
+    </tr>
+    <tr>
+      <td style="padding: 8px; border: 1px solid #ddd;"><code>PUT</code></td>
+      <td style="padding: 8px; border: 1px solid #ddd;"><code>/users/:id</code></td>
+      <td style="padding: 8px; border: 1px solid #ddd;">Admin</td>
+      <td style="padding: 8px; border: 1px solid #ddd;"><i>Param</i>: <code>id</code><br><i>Body</i>: <code>name</code>, <code>username</code>, dll.</td>
+      <td style="padding: 8px; border: 1px solid #ddd;">Memperbarui data pengguna tertentu.</td>
     </tr>
     <tr>
       <td style="padding: 8px; border: 1px solid #ddd;"><code>DELETE</code></td>
       <td style="padding: 8px; border: 1px solid #ddd;"><code>/users/:userId</code></td>
       <td style="padding: 8px; border: 1px solid #ddd;">Admin</td>
       <td style="padding: 8px; border: 1px solid #ddd;"><i>Param</i>: <code>userId</code></td>
-      <td style="padding: 8px; border: 1px solid #ddd;">Membekukan atau menghapus akun dari sistem.</td>
+      <td style="padding: 8px; border: 1px solid #ddd;">Menghapus pengguna secara permanen dari sistem.</td>
+    </tr>
+    <tr>
+      <td style="padding: 8px; border: 1px solid #ddd;"><code>GET</code></td>
+      <td style="padding: 8px; border: 1px solid #ddd;"><code>/quizzes</code></td>
+      <td style="padding: 8px; border: 1px solid #ddd;">Admin</td>
+      <td style="padding: 8px; border: 1px solid #ddd;"><i>Query</i>: <code>page</code>, <code>limit</code>, <code>q</code>, <code>status</code></td>
+      <td style="padding: 8px; border: 1px solid #ddd;">Mendapatkan daftar seluruh kuis global (mendukung paginasi).</td>
+    </tr>
+    <tr>
+      <td style="padding: 8px; border: 1px solid #ddd;"><code>GET</code></td>
+      <td style="padding: 8px; border: 1px solid #ddd;"><code>/quizzes/:slug</code></td>
+      <td style="padding: 8px; border: 1px solid #ddd;">Admin</td>
+      <td style="padding: 8px; border: 1px solid #ddd;"><i>Param</i>: <code>slug</code></td>
+      <td style="padding: 8px; border: 1px solid #ddd;">Melihat detail kuis beserta daftar soal untuk inspeksi.</td>
+    </tr>
+    <tr>
+      <td style="padding: 8px; border: 1px solid #ddd;"><code>DELETE</code></td>
+      <td style="padding: 8px; border: 1px solid #ddd;"><code>/quizzes/:quizId</code></td>
+      <td style="padding: 8px; border: 1px solid #ddd;">Admin</td>
+      <td style="padding: 8px; border: 1px solid #ddd;"><i>Param</i>: <code>quizId</code></td>
+      <td style="padding: 8px; border: 1px solid #ddd;">Menghapus paksa kuis beserta data pengerjaannya dari sistem.</td>
+    </tr>
+    <tr>
+      <td style="padding: 8px; border: 1px solid #ddd;"><code>GET</code></td>
+      <td style="padding: 8px; border: 1px solid #ddd;"><code>/attempts</code></td>
+      <td style="padding: 8px; border: 1px solid #ddd;">Admin</td>
+      <td style="padding: 8px; border: 1px solid #ddd;"><i>Query</i>: <code>page</code>, <code>limit</code>, <code>search</code>, <code>status</code></td>
+      <td style="padding: 8px; border: 1px solid #ddd;">Memantau riwayat pengerjaan ujian secara global.</td>
+    </tr>
+    <tr>
+      <td style="padding: 8px; border: 1px solid #ddd;"><code>GET</code></td>
+      <td style="padding: 8px; border: 1px solid #ddd;"><code>/attempts/:attemptId</code></td>
+      <td style="padding: 8px; border: 1px solid #ddd;">Admin</td>
+      <td style="padding: 8px; border: 1px solid #ddd;"><i>Param</i>: <code>attemptId</code></td>
+      <td style="padding: 8px; border: 1px solid #ddd;">Melihat detail lembar jawaban dan skor pengerjaan peserta.</td>
+    </tr>
+    <tr>
+      <td style="padding: 8px; border: 1px solid #ddd;"><code>GET</code></td>
+      <td style="padding: 8px; border: 1px solid #ddd;"><code>/settings/profile</code></td>
+      <td style="padding: 8px; border: 1px solid #ddd;">Admin</td>
+      <td style="padding: 8px; border: 1px solid #ddd;">-</td>
+      <td style="padding: 8px; border: 1px solid #ddd;">Mengambil data profil Admin yang sedang login.</td>
+    </tr>
+    <tr>
+      <td style="padding: 8px; border: 1px solid #ddd;"><code>PUT</code></td>
+      <td style="padding: 8px; border: 1px solid #ddd;"><code>/settings/profile</code></td>
+      <td style="padding: 8px; border: 1px solid #ddd;">Admin</td>
+      <td style="padding: 8px; border: 1px solid #ddd;"><i>Body</i>: <code>name</code>, <code>username</code></td>
+      <td style="padding: 8px; border: 1px solid #ddd;">Memperbarui informasi profil Admin.</td>
+    </tr>
+    <tr>
+      <td style="padding: 8px; border: 1px solid #ddd;"><code>PUT</code></td>
+      <td style="padding: 8px; border: 1px solid #ddd;"><code>/settings/password</code></td>
+      <td style="padding: 8px; border: 1px solid #ddd;">Admin</td>
+      <td style="padding: 8px; border: 1px solid #ddd;"><i>Body</i>: <code>currentPassword</code>, <code>newPassword</code></td>
+      <td style="padding: 8px; border: 1px solid #ddd;">Mengubah dan mengamankan password Admin.</td>
     </tr>
   </tbody>
 </table>
-
 ---
 
 ### 🌟 FRONTEND: SEGERA HADIR!
