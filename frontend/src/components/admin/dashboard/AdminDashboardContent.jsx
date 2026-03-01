@@ -1,9 +1,25 @@
 "use client";
 
 import React, { useState, useEffect } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-import { Users, BookOpen, Activity, Award, Loader2, TrendingUp, BarChart3, Clock, CheckCircle2, XCircle } from 'lucide-react';
+import { motion } from 'framer-motion';
+import { Users, BookOpen, Activity, Award, Loader2, Clock, CheckCircle2, XCircle } from 'lucide-react';
+import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, ResponsiveContainer, BarChart, Bar } from 'recharts';
 import { adminService } from '../../../services/admin.service';
+
+const CustomTooltip = ({ active, payload, label, suffix = "" }) => {
+  if (active && payload && payload.length) {
+    return (
+      <div className="bg-white/90 backdrop-blur-md border border-slate-200/80 p-3 rounded-xl shadow-[0_4px_20px_rgba(0,0,0,0.05)]">
+        <p className="text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-1">{label}</p>
+        <p className="text-sm font-bold text-slate-800 flex items-center gap-2">
+          <span className="w-2 h-2 rounded-full" style={{ backgroundColor: payload[0].color }}></span>
+          {payload[0].value} {suffix}
+        </p>
+      </div>
+    );
+  }
+  return null;
+};
 
 export default function AdminDashboardContent() {
   const [dashboardData, setDashboardData] = useState({
@@ -34,7 +50,6 @@ export default function AdminDashboardContent() {
     }
   };
 
-  // Utility format waktu ("2 jam yang lalu", "5 menit yang lalu", dll)
   const formatTimeAgo = (dateString) => {
     const date = new Date(dateString);
     const now = new Date();
@@ -50,14 +65,13 @@ export default function AdminDashboardContent() {
     return `${days} hari yang lalu`;
   };
 
-  const { summary, charts, recentActivity } = dashboardData;
+  const { summary, recentActivity } = dashboardData;
 
-  // Tampilan Loading Spinner
   if (isLoading) {
     return (
       <div className="flex flex-col items-center justify-center min-h-[60vh]">
         <Loader2 className="w-10 h-10 text-brand-500 animate-spin mb-4" />
-        <p className="text-slate-500 font-medium animate-pulse">Menyiapkan analitik global...</p>
+        <p className="text-slate-500 font-medium animate-pulse">Menyiapkan dashboard data...</p>
       </div>
     );
   }
@@ -65,7 +79,6 @@ export default function AdminDashboardContent() {
   return (
     <div className="max-w-7xl mx-auto space-y-6">
       
-      {/* Header */}
       <div className="mb-8 flex flex-col md:flex-row md:items-end justify-between gap-4">
         <div>
           <h2 className="text-2xl md:text-3xl font-bold text-slate-900 mb-2">Ikhtisar Global Sistem</h2>
@@ -77,11 +90,9 @@ export default function AdminDashboardContent() {
         </div>
       </div>
 
-      {/* 1. Quick Stats Cards (Deep Glassmorphism) */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
         
-        {/* Total Pengguna */}
-        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4, delay: 0.1 }} className="bg-white/40 backdrop-blur-xl p-6 rounded-[1.5rem] border border-white/60 flex items-start justify-between group hover:-translate-y-1 transition-all duration-300 shadow-[0_8px_32px_rgba(0,0,0,0.04)] hover:shadow-[0_16px_48px_rgba(16,185,129,0.08)]">
+        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4, delay: 0.1 }} className="bg-white/40 backdrop-blur-xl p-6 rounded-3xl border border-white/60 flex items-start justify-between group hover:-translate-y-1 transition-all duration-300 shadow-[0_8px_32px_rgba(0,0,0,0.04)] hover:shadow-[0_16px_48px_rgba(16,185,129,0.08)]">
           <div>
             <p className="text-sm font-semibold text-slate-500 mb-1">Total Pengguna</p>
             <h3 className="text-3xl font-black text-slate-800 tracking-tight">{summary.totalUsers}</h3>
@@ -94,8 +105,7 @@ export default function AdminDashboardContent() {
           </div>
         </motion.div>
 
-        {/* Total Kuis */}
-        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4, delay: 0.2 }} className="bg-white/40 backdrop-blur-xl p-6 rounded-[1.5rem] border border-white/60 flex items-start justify-between group hover:-translate-y-1 transition-all duration-300 shadow-[0_8px_32px_rgba(0,0,0,0.04)] hover:shadow-[0_16px_48px_rgba(14,165,233,0.08)]">
+        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4, delay: 0.2 }} className="bg-white/40 backdrop-blur-xl p-6 rounded-3xl border border-white/60 flex items-start justify-between group hover:-translate-y-1 transition-all duration-300 shadow-[0_8px_32px_rgba(0,0,0,0.04)] hover:shadow-[0_16px_48px_rgba(14,165,233,0.08)]">
           <div>
             <p className="text-sm font-semibold text-slate-500 mb-1">Total Kuis</p>
             <h3 className="text-3xl font-black text-slate-800 tracking-tight">{summary.totalQuizzes}</h3>
@@ -108,8 +118,7 @@ export default function AdminDashboardContent() {
           </div>
         </motion.div>
 
-        {/* Total Pengerjaan */}
-        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4, delay: 0.3 }} className="bg-white/40 backdrop-blur-xl p-6 rounded-[1.5rem] border border-white/60 flex items-start justify-between group hover:-translate-y-1 transition-all duration-300 shadow-[0_8px_32px_rgba(0,0,0,0.04)] hover:shadow-[0_16px_48px_rgba(99,102,241,0.08)]">
+        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4, delay: 0.3 }} className="bg-white/40 backdrop-blur-xl p-6 rounded-3xl border border-white/60 flex items-start justify-between group hover:-translate-y-1 transition-all duration-300 shadow-[0_8px_32px_rgba(0,0,0,0.04)] hover:shadow-[0_16px_48px_rgba(99,102,241,0.08)]">
           <div>
             <p className="text-sm font-semibold text-slate-500 mb-1">Total Percobaan</p>
             <h3 className="text-3xl font-black text-slate-800 tracking-tight">{summary.totalAttempts}</h3>
@@ -122,8 +131,7 @@ export default function AdminDashboardContent() {
           </div>
         </motion.div>
 
-        {/* Tingkat Kelulusan */}
-        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4, delay: 0.4 }} className="bg-white/40 backdrop-blur-xl p-6 rounded-[1.5rem] border border-white/60 flex items-start justify-between group hover:-translate-y-1 transition-all duration-300 shadow-[0_8px_32px_rgba(0,0,0,0.04)] hover:shadow-[0_16px_48px_rgba(249,115,22,0.08)]">
+        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4, delay: 0.4 }} className="bg-white/40 backdrop-blur-xl p-6 rounded-3xl border border-white/60 flex items-start justify-between group hover:-translate-y-1 transition-all duration-300 shadow-[0_8px_32px_rgba(0,0,0,0.04)] hover:shadow-[0_16px_48px_rgba(249,115,22,0.08)]">
           <div>
             <p className="text-sm font-semibold text-slate-500 mb-1">Rata-rata Kelulusan</p>
             <h3 className="text-3xl font-black text-slate-800 tracking-tight">{summary.passRatePercentage}%</h3>
@@ -138,31 +146,59 @@ export default function AdminDashboardContent() {
 
       </div>
 
-      {/* 2. Area Grafik Placeholder */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mt-6">
-        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4, delay: 0.5 }} className="lg:col-span-2 bg-white/40 backdrop-blur-xl border border-white/60 rounded-[2rem] p-6 sm:p-8 shadow-[0_8px_32px_rgba(0,0,0,0.04)] relative overflow-hidden flex flex-col">
-          <h3 className="text-lg font-bold text-slate-800 mb-2">Tren Partisipasi (7 Hari Terakhir)</h3>
+        
+        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4, delay: 0.5 }} className="lg:col-span-2 bg-white/60 backdrop-blur-2xl border border-white/80 rounded-4xl p-6 sm:p-8 shadow-[0_8px_32px_rgba(0,0,0,0.04)] relative overflow-hidden flex flex-col">
+          <h3 className="text-lg font-bold text-slate-800 mb-1">Tren Partisipasi (7 Hari Terakhir)</h3>
           <p className="text-sm text-slate-500 mb-6">Tingkat pengerjaan kuis dari waktu ke waktu secara global.</p>
-          <div className="flex-1 min-h-[250px] bg-white/50 rounded-xl border border-dashed border-brand-200 flex flex-col items-center justify-center text-center p-6 shadow-inner">
-             <TrendingUp className="w-10 h-10 text-brand-300 mb-3" />
-             <p className="text-slate-600 font-medium">Area Integrasi Line Chart</p>
-             <p className="text-slate-400 text-xs mt-1">Data: <code className="bg-white/80 px-1 rounded text-pink-500">charts.engagementTrend</code></p>
+          
+          <div className="flex-1 w-full min-h-75">
+            {dashboardData?.charts?.engagementTrend?.length > 0 ? (
+              <ResponsiveContainer width="100%" height="100%">
+                <AreaChart data={dashboardData.charts.engagementTrend} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
+                  <defs>
+                    <linearGradient id="colorTrend" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="5%" stopColor="#10b981" stopOpacity={0.3}/>
+                      <stop offset="95%" stopColor="#10b981" stopOpacity={0}/>
+                    </linearGradient>
+                  </defs>
+                  <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e2e8f0" opacity={0.5} />
+                  <XAxis dataKey="date" axisLine={false} tickLine={false} tick={{ fill: '#64748b', fontSize: 12 }} dy={10} />
+                  <YAxis axisLine={false} tickLine={false} tick={{ fill: '#64748b', fontSize: 12 }} allowDecimals={false} />
+                  <RechartsTooltip content={<CustomTooltip suffix="Pengerjaan" />} cursor={{ stroke: '#10b981', strokeWidth: 1, strokeDasharray: '3 3' }} />
+                  <Area type="monotone" dataKey="jumlahPengerjaan" stroke="#10b981" strokeWidth={3} fillOpacity={1} fill="url(#colorTrend)" activeDot={{ r: 6, fill: '#10b981', stroke: '#fff', strokeWidth: 2 }} />
+                </AreaChart>
+              </ResponsiveContainer>
+            ) : (
+              <div className="w-full h-full flex items-center justify-center text-slate-400 text-sm italic">Belum ada data tren pengerjaan.</div>
+            )}
           </div>
         </motion.div>
 
-        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4, delay: 0.6 }} className="bg-white/40 backdrop-blur-xl border border-white/60 rounded-[2rem] p-6 sm:p-8 shadow-[0_8px_32px_rgba(0,0,0,0.04)] relative overflow-hidden flex flex-col">
-          <h3 className="text-lg font-bold text-slate-800 mb-2">Kuis Teratas</h3>
-          <p className="text-sm text-slate-500 mb-6">Berdasarkan volume partisipasi tertinggi.</p>
-          <div className="flex-1 min-h-[250px] bg-white/50 rounded-xl border border-dashed border-sky-200 flex flex-col items-center justify-center text-center p-6 shadow-inner">
-             <BarChart3 className="w-10 h-10 text-sky-300 mb-3" />
-             <p className="text-slate-600 font-medium">Area Integrasi Bar Chart</p>
-             <p className="text-slate-400 text-xs mt-1">Data: <code className="bg-white/80 px-1 rounded text-pink-500">charts.popularQuizzes</code></p>
+        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4, delay: 0.6 }} className="bg-white/60 backdrop-blur-2xl border border-white/80 rounded-4xl p-6 sm:p-8 shadow-[0_8px_32px_rgba(0,0,0,0.04)] relative overflow-hidden flex flex-col">
+          <h3 className="text-lg font-bold text-slate-800 mb-1">Kuis Teratas</h3>
+          <p className="text-sm text-slate-500 mb-6">Berdasarkan volume partisipasi.</p>
+          
+          <div className="flex-1 w-full min-h-75">
+            {dashboardData?.charts?.popularQuizzes?.length > 0 ? (
+              <ResponsiveContainer width="100%" height="100%">
+                <BarChart data={dashboardData.charts.popularQuizzes} layout="vertical" margin={{ top: 0, right: 0, left: 0, bottom: 0 }}>
+                  <CartesianGrid strokeDasharray="3 3" horizontal={false} stroke="#e2e8f0" opacity={0.5} />
+                  <XAxis type="number" hide />
+                  <YAxis dataKey="name" type="category" axisLine={false} tickLine={false} width={100} tick={{ fill: '#475569', fontSize: 12, fontWeight: 500 }} />
+                  <RechartsTooltip content={<CustomTooltip suffix="Peserta" />} cursor={{ fill: '#f8fafc' }} />
+                  <Bar dataKey="totalPeserta" fill="#38bdf8" radius={[0, 6, 6, 0]} barSize={24} />
+                </BarChart>
+              </ResponsiveContainer>
+            ) : (
+              <div className="w-full h-full flex items-center justify-center text-slate-400 text-sm italic border border-dashed border-slate-200 rounded-xl">Belum ada data partisipasi kuis.</div>
+            )}
           </div>
         </motion.div>
+
       </div>
 
-      {/* 3. RECENT ACTIVITY TABLE */}
-      <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4, delay: 0.7 }} className="mt-6 bg-white/40 backdrop-blur-xl border border-white/60 rounded-[2rem] p-6 sm:p-8 shadow-[0_8px_32px_rgba(0,0,0,0.04)] overflow-hidden relative">
+      <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4, delay: 0.7 }} className="mt-6 bg-white/40 backdrop-blur-xl border border-white/60 rounded-4xl p-6 sm:p-8 shadow-[0_8px_32px_rgba(0,0,0,0.04)] overflow-hidden relative">
         <h3 className="text-lg font-bold text-slate-800 mb-6">Aktivitas Pengerjaan Terbaru</h3>
         <div className="overflow-x-auto">
           <table className="w-full text-left border-collapse whitespace-nowrap">

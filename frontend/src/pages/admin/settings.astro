@@ -1,0 +1,15 @@
+---
+import MainLayout from '../../layouts/MainLayout.astro';
+import DashboardShell from '../../components/admin/dashboard/DashboardShell.jsx';
+import AdminSettings from '../../components/admin/settings/AdminSettings.jsx';
+
+const currentPath = Astro.url.pathname;
+---
+
+<MainLayout title="Pengaturan Akun | Admin Qurio">
+  <DashboardShell client:only="react" role="ADMIN" currentPath={currentPath}>
+    
+    <AdminSettings client:load />
+
+  </DashboardShell>
+</MainLayout>

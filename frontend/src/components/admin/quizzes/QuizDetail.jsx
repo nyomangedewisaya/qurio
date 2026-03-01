@@ -56,7 +56,7 @@ function QuizDetailContent({ slug }) {
         <AlertCircle className="w-16 h-16 text-red-400 mb-4" />
         <h2 className="text-xl font-bold text-slate-800">Kuis Tidak Ditemukan</h2>
         <p className="text-slate-500 mt-2 mb-6">Kuis mungkin sudah dihapus atau ID tidak valid.</p>
-        <a href="/admin/quizzes/quiz" className="px-6 py-2.5 bg-brand-500 text-white font-bold rounded-xl hover:bg-brand-600 transition-colors shadow-lg shadow-brand-500/20">Kembali ke Daftar Kuis</a>
+        <a href="/admin/quizzes" className="px-6 py-2.5 bg-brand-500 text-white font-bold rounded-xl hover:bg-brand-600 transition-colors shadow-lg shadow-brand-500/20">Kembali ke Daftar Kuis</a>
       </div>
     );
   }
@@ -65,7 +65,7 @@ function QuizDetailContent({ slug }) {
     <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="max-w-5xl mx-auto space-y-6 pb-12">
       
       <div className="flex items-center gap-4 mb-4 lg:mb-6">
-        <a href="/admin/quizzes/quiz" className="p-2.5 bg-white/60 hover:bg-white border border-slate-200/80 rounded-xl text-slate-600 hover:text-brand-600 transition-all shadow-sm group">
+        <a href="/admin/quizzes" className="p-2.5 bg-white/60 hover:bg-white border border-slate-200/80 rounded-xl text-slate-600 hover:text-brand-600 transition-all shadow-sm group">
           <ChevronLeft className="w-5 h-5 group-hover:-translate-x-1 transition-transform" />
         </a>
         <div>
@@ -168,9 +168,12 @@ function QuizDetailContent({ slug }) {
       </div>
 
       <div className="mt-8">
-        <div className="flex items-center gap-2 mb-6 px-2">
-          <BookOpen className="w-5 h-5 text-brand-500" />
-          <h3 className="text-lg font-bold text-slate-800">Daftar Pertanyaan ({quiz.questions?.length || 0})</h3>
+        <div className="flex items-center gap-3 px-2 pt-4 mb-4">
+          <div className="p-2 bg-brand-100 text-brand-600 rounded-lg"><BookOpen className="w-5 h-5" /></div>
+          <div>
+            <h3 className="text-lg font-bold text-slate-800">Daftar Pertanyaan ({quiz.questions?.length || 0})</h3>
+            <p className="text-[13px] text-slate-500">Rincian soal dan opsi yang dibuat instruktur</p>
+          </div>
         </div>
 
         <div className="space-y-4">

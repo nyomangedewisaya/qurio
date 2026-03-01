@@ -1,3 +1,4 @@
+const bcrypt = require('bcrypt');
 const prisma = require('../config/database');
 
 /**
@@ -128,7 +129,6 @@ const forceDeleteQuiz = async (req, res) => {
     
     res.status(200).json({ success: true, message: 'Kuis berhasil dihapus permanen.' });
   } catch (error) {
-    console.error("❌ [ERROR FORCE DELETE QUIZ]:", error);
     res.status(500).json({ 
       success: false, 
       message: 'Gagal menghapus kuis. Pastikan semua relasi data sudah sesuai.', 
@@ -238,7 +238,6 @@ const updateUser = async (req, res) => {
     res.status(200).json({ success: true, message: 'Data pengguna berhasil diperbarui', data: updatedUser });
 
   } catch (error) {
-    console.error("❌ [ERROR PRISMA UPDATE USER]:", error);
 
     if (error.code === 'P2002') {
       const target = error.meta?.target;
@@ -335,7 +334,7 @@ const getQuizzes = async (req, res) => {
  * @route   GET /api/admin/quizzes/:slug
  * @desc    Admin melihat detail lengkap 1 kuis berdasarkan Slug
  * @access  Private (Hanya ADMIN)
- */
+*/
 const getQuizBySlug = async (req, res) => {
   try {
     const { slug } = req.params; 
@@ -356,9 +355,176 @@ const getQuizBySlug = async (req, res) => {
 
     res.status(200).json({ success: true, data: quiz });
   } catch (error) {
-    console.error("❌ [ERROR GET QUIZ DETAIL]:", error);
     res.status(500).json({ success: false, message: 'Gagal mengambil detail kuis', error: error.message });
   }
 };
 
-module.exports = { getDashboardStats, forceDeleteQuiz, getUsers, updateUser, deleteUser, getQuizzes, getQuizBySlug };
+/**
+ * @route   GET /api/admin/attempts
+ * @desc    Admin melihat seluruh jawaban peserta dengan Pagination & Filter
+ * @access  Private (Hanya ADMIN)
+*/
+const getGlobalAttempts = async (req, res) => {
+  try {
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 10;
+    const skip = (page - 1) * limit;
+    
+    const { search, status, startDate, endDate } = req.query;
+
+    let whereClause = {};
+    
+    if (search) {
+      whereClause.OR = [
+        { participant: { name: { contains: search } } },
+        { quiz: { title: { contains: search } } }
+      ];
+    }
+    
+    if (status === 'COMPLETED') {
+      whereClause.completedAt = { not: null };
+    } else if (status === 'IN_PROGRESS') {
+      whereClause.completedAt = null;
+    }
+
+    if (startDate && endDate) {
+      whereClause.startedAt = {
+        gte: new Date(startDate),
+        lte: new Date(endDate)
+      };
+    }
+    
+    const [attempts, totalItems] = await prisma.$transaction([
+      prisma.quizAttempt.findMany({
+        where: whereClause,
+        skip,
+        take: limit,
+        orderBy: { startedAt: 'desc' },
+        include: {
+          participant: { select: { id: true, name: true, username: true } },
+          quiz: { select: { id: true, title: true, quizCode: true, status: true } }
+        }
+      }),
+      prisma.quizAttempt.count({ where: whereClause })
+    ]);
+
+    const totalPages = Math.ceil(totalItems / limit);
+
+    res.status(200).json({
+      success: true,
+      data: attempts,
+      pagination: { totalItems, totalPages, currentPage: page, limit }
+    });
+  } catch (error) {
+    res.status(500).json({ success: false, message: 'Gagal memuat riwayat', error: error.message });
+  }
+};
+
+/**
+ * @route   GET /api/admin/attempts/:attemptId
+ * @desc    Admin melihat detail lengkap 1 jawaban siswa
+ * @access  Private (Hanya ADMIN)
+*/
+const getAttemptDetail = async (req, res) => {
+  try {
+    const { attemptId } = req.params;
+
+    const attempt = await prisma.quizAttempt.findUnique({
+      where: { id: attemptId },
+      include: {
+        participant: { select: { id: true, name: true, username: true } }, 
+        quiz: { select: { id: true, title: true, quizCode: true, timeLimit: true } },
+        answers: {
+          include: {
+            question: { include: { options: true } },
+            option: true 
+          }
+        }
+      }
+    });
+
+    if (!attempt) return res.status(404).json({ success: false, message: 'Riwayat tidak ditemukan' });
+
+    res.status(200).json({ success: true, data: attempt });
+  } catch (error) {
+    res.status(500).json({ success: false, message: 'Gagal memuat detail', error: error.message });
+  }
+};
+
+/**
+ * @route   GET /api/admin/settings/profile
+ * @desc    Ambil data profil admin yang sedang login
+ * @access  Private (Hanya ADMIN)
+ */
+const getAdminProfile = async (req, res) => {
+  try {
+    const admin = await prisma.user.findUnique({
+      where: { id: req.user.id },
+      select: { id: true, name: true, username: true, role: true }
+    });
+    res.status(200).json({ success: true, data: admin });
+  } catch (error) {
+    res.status(500).json({ success: false, message: 'Gagal memuat profil', error: error.message });
+  }
+};
+
+/**
+ * @route   PUT /api/admin/settings/profile
+ * @desc    Update nama & username admin
+ * @access  Private (Hanya ADMIN)
+ */
+const updateAdminProfile = async (req, res) => {
+  try {
+    const { name, username } = req.body;
+
+    const existingUser = await prisma.user.findFirst({
+      where: { username, id: { not: req.user.id } }
+    });
+
+    if (existingUser) {
+      return res.status(400).json({ success: false, message: 'Username sudah digunakan oleh akun lain' });
+    }
+
+    const updatedAdmin = await prisma.user.update({
+      where: { id: req.user.id },
+      data: { name, username },
+      select: { id: true, name: true, username: true }
+    });
+
+    res.status(200).json({ success: true, message: 'Profil berhasil diperbarui', data: updatedAdmin });
+  } catch (error) {
+    res.status(500).json({ success: false, message: 'Gagal memperbarui profil', error: error.message });
+  }
+};
+
+/**
+ * @route   PUT /api/admin/settings/password
+ * @desc    Update password admin
+ * @access  Private (Hanya ADMIN)
+ */
+const updateAdminPassword = async (req, res) => {
+  try {
+    const { currentPassword, newPassword } = req.body;
+
+    const user = await prisma.user.findUnique({ where: { id: req.user.id } });
+
+    const isMatch = await bcrypt.compare(currentPassword, user.password);
+    if (!isMatch) {
+      return res.status(400).json({ success: false, message: 'Password saat ini salah' });
+    }
+
+    const hashedNewPassword = await bcrypt.hash(newPassword, 10);
+
+    await prisma.user.update({
+      where: { id: req.user.id },
+      data: { password: hashedNewPassword }
+    });
+
+    res.status(200).json({ success: true, message: 'Password berhasil diperbarui' });
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({ success: false, message: 'Gagal memperbarui password', error: error.message });
+  }
+};
+
+module.exports = { getDashboardStats, forceDeleteQuiz, getUsers, updateUser, deleteUser, getQuizzes, getQuizBySlug, getGlobalAttempts, getAttemptDetail, getAdminProfile, updateAdminProfile, updateAdminPassword };

@@ -1,17 +1,11 @@
-import { 
-  LayoutDashboard, Users, BookOpen, FileQuestion, 
-  ListChecks, Activity, Award, Settings 
-} from 'lucide-react';
+import { LayoutDashboard, Users, BookOpen, FileQuestion, Activity, Award, Settings } from 'lucide-react';
 
 export const getMenuItems = (role) => {
   const adminMenu = [
     { title: 'Dashboard', path: '/admin/dashboard', icon: LayoutDashboard },
     { title: 'Manajemen User', path: '/admin/users', icon: Users },
-    { title: 'Manajemen Kuis', path: '/admin/quizzes/quiz', icon: BookOpen },
-    { title: 'Bank Soal', path: '/admin/questions', icon: FileQuestion },
-    { title: 'Konfigurasi Opsi', path: '/admin/options', icon: ListChecks },
+    { title: 'Manajemen Kuis', path: '/admin/quizzes', icon: BookOpen },
     { title: 'Riwayat Pengerjaan', path: '/admin/attempts', icon: Activity },
-    { title: 'Hasil & Penilaian', path: '/admin/results', icon: Award },
     { title: 'Pengaturan', path: '/admin/settings', icon: Settings },
   ];
 

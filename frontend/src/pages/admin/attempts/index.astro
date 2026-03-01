@@ -1,0 +1,15 @@
+---
+import MainLayout from '../../../layouts/MainLayout.astro';
+import DashboardShell from '../../../components/admin/dashboard/DashboardShell.jsx';
+import AttemptHistory from '../../../components/admin/attempts/AttemptHistory.jsx';
+
+const currentPath = Astro.url.pathname;
+---
+
+<MainLayout title="Riwayat Pengerjaan | Admin Qurio">
+  <DashboardShell client:only="react" role="ADMIN" currentPath={currentPath}>
+    
+    <AttemptHistory client:load />
+
+  </DashboardShell>
+</MainLayout>

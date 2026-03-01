@@ -2,21 +2,82 @@
 
 import React, { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Menu, ChevronLeft, ChevronRight, LogOut, Bell } from "lucide-react";
+import { Menu, ChevronLeft, ChevronRight, LogOut } from "lucide-react";
+import { Calendar } from "lucide-react";
 import { getMenuItems } from "../../../utils/navigation";
 
 export default function DashboardShell({ children, role = "ADMIN", currentPath = "/admin/dashboard" }) {
   const [isMobileOpen, setIsMobileOpen] = useState(false);
-  const [isCollapsed, setIsCollapsed] = useState(false);
   const menuItems = getMenuItems(role);
+  const [userData, setUserData] = useState({ name: 'Memuat...', role: role });
+  const [greeting, setGreeting] = useState('Selamat Datang');
+  const [currentDate, setCurrentDate] = useState('');
+  const [isLogoutModalOpen, setIsLogoutModalOpen] = useState(false);
 
+  const getInitials = (name) => {
+    if (!name || name === 'Memuat...') return 'U';
+    const words = name.split(' ');
+    if (words.length >= 2) return (words[0][0] + words[1][0]).toUpperCase();
+    return name.substring(0, 2).toUpperCase();
+  };
+
+  const [isCollapsed, setIsCollapsed] = useState(() => {
+    if (typeof window !== "undefined") {
+      const savedState = localStorage.getItem("qurio_sidebar_collapsed");
+      return savedState === "true"; 
+    }
+    return false;
+  });
+
+  const toggleSidebar = () => {
+    setIsCollapsed((prev) => {
+      const newState = !prev;
+      if (typeof window !== "undefined") {
+        localStorage.setItem("qurio_sidebar_collapsed", String(newState));
+      }
+      return newState;
+    });
+  };
+
+  const handleLogoutClick = () => {
+    setIsLogoutModalOpen(true);
+  };
+  
+  const confirmLogout = () => {
+    localStorage.removeItem('token'); 
+    localStorage.removeItem('user');
+    window.location.href = '/auth/login'; 
+  };
+  
   useEffect(() => {
-    const handleResize = () => {
-      if (typeof window !== "undefined" && window.innerWidth >= 1024) {
-        setIsMobileOpen(false);
+    const initDashboard = () => {
+      const hour = new Date().getHours();
+      if (hour >= 5 && hour < 12) setGreeting('Selamat Pagi');
+      else if (hour >= 12 && hour < 15) setGreeting('Selamat Siang');
+      else if (hour >= 15 && hour < 18) setGreeting('Selamat Sore');
+      else setGreeting('Selamat Malam');
+
+      setCurrentDate(new Date().toLocaleDateString('id-ID', { 
+        weekday: 'long', day: 'numeric', month: 'short', year: 'numeric' 
+      }));
+
+      try {
+        const storedUser = localStorage.getItem('qurio_user'); 
+        if (storedUser) {
+          setUserData(JSON.parse(storedUser));
+        }
+      } catch (e) {
+        console.error("Gagal mengambil data user", e);
       }
     };
+
+    const handleResize = () => {
+      if (window.innerWidth >= 1024) setIsMobileOpen(false);
+    };
+
+    initDashboard();
     window.addEventListener("resize", handleResize);
+
     return () => window.removeEventListener("resize", handleResize);
   }, []);
 
@@ -85,6 +146,7 @@ export default function DashboardShell({ children, role = "ADMIN", currentPath =
 
       <div className="p-4 border-t border-slate-200/50">
         <button 
+          onClick={handleLogoutClick} 
           className={`w-full flex items-center py-2.5 text-slate-500 hover:text-red-500 hover:bg-red-50 rounded-xl transition-all duration-300 group ${
             collapsed ? "justify-center px-0" : "px-3"
           }`}
@@ -115,7 +177,7 @@ export default function DashboardShell({ children, role = "ADMIN", currentPath =
         {renderSidebar(isCollapsed, "desktop")}
 
         <button
-          onClick={() => setIsCollapsed(!isCollapsed)}
+          onClick={toggleSidebar}
           aria-label={isCollapsed ? "Expand sidebar" : "Collapse sidebar"}
           className="absolute -right-3 top-24 bg-white border border-slate-200 text-slate-400 hover:text-brand-500 rounded-full p-1.5 shadow-sm transition-colors z-50 flex items-center justify-center"
         >
@@ -147,31 +209,48 @@ export default function DashboardShell({ children, role = "ADMIN", currentPath =
       </AnimatePresence>
 
       <div className="flex-1 flex flex-col min-w-0 h-screen overflow-hidden">
-        <header className="h-15 bg-white/50 backdrop-blur-lg border-b border-slate-200/60 shadow-[0_4px_24px_rgba(0,0,0,0.02)] z-30 px-4 sm:px-6 lg:px-8 flex items-center justify-between sticky top-0">
+        <header className="h-16 bg-white/50 backdrop-blur-lg border-b border-slate-200/60 shadow-[0_4px_24px_rgba(0,0,0,0.02)] z-30 px-4 sm:px-6 lg:px-8 flex items-center justify-between sticky top-0">
+          
           <div className="flex items-center gap-4">
             <button onClick={() => setIsMobileOpen(true)} className="lg:hidden p-2 text-slate-500 hover:bg-slate-100 rounded-lg transition-colors" aria-label="Open menu">
               <Menu className="w-6 h-6" />
             </button>
-            <h1 className="text-xl font-bold text-slate-800 capitalize hidden sm:block">{currentPath.split("/").pop().replace("-", " ")}</h1>
+            <div className="hidden sm:block">
+              <h1 className="text-xl font-bold text-slate-800 capitalize leading-tight">
+                {currentPath.split("/").pop().replace("-", " ")}
+              </h1>
+              <p className="text-[12px] text-slate-500 font-medium mt-0.5">
+                {greeting}, siap untuk hari ini?
+              </p>
+            </div>
           </div>
 
-          <div className="flex items-center gap-5">
-            <button className="relative p-2 text-slate-400 hover:text-brand-500 transition-colors" aria-label="Notifications">
-              <Bell className="w-5 h-5" />
-              <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-red-500 rounded-full border-2 border-white"></span>
-            </button>
+          <div className="flex items-center gap-4 sm:gap-6">
+            
+            <div className="hidden md:flex items-center gap-2 px-3 py-1.5 bg-slate-50/80 rounded-lg border border-slate-200/60 shadow-inner">
+               <Calendar className="w-4 h-4 text-brand-500" />
+               <span className="text-[12px] font-semibold text-slate-600">
+                 {currentDate}
+               </span>
+            </div>
 
-            <div className="flex items-center gap-3 pl-5 border-l border-slate-200">
+            <div className="flex items-center gap-3 pl-0 md:pl-6 md:border-l border-slate-200">
               <div className="text-right hidden sm:block">
-                <p className="text-[13px] font-bold text-slate-800">Admin Qurio</p>
-                <p className="text-[11px] text-slate-500 font-medium tracking-wide">Administrator</p>
+                <p className="text-[13px] font-bold text-slate-800 max-w-30 truncate">{userData.name}</p>
+                <p className="text-[11px] text-brand-600 font-bold tracking-wider uppercase">
+                  {userData.role === 'ADMIN' ? 'Administrator' : userData.role === 'AUTHOR' ? 'Instruktur' : 'Siswa'}
+                </p>
               </div>
-              <div className="w-10 h-10 rounded-full bg-linear-to-br from-brand-400 to-teal-500 p-0.5 shadow-sm">
+              
+              <div className="w-10 h-10 rounded-full bg-linear-to-br from-brand-400 to-teal-500 p-0.5 shadow-sm shrink-0 hover:scale-105 transition-transform cursor-pointer">
                 <div className="w-full h-full rounded-full bg-white flex items-center justify-center">
-                  <span className="text-brand-600 font-bold text-sm">AQ</span>
+                  <span className="text-brand-600 font-bold text-sm">
+                    {getInitials(userData.name)}
+                  </span>
                 </div>
               </div>
             </div>
+
           </div>
         </header>
 
@@ -181,17 +260,62 @@ export default function DashboardShell({ children, role = "ADMIN", currentPath =
           <motion.div
             initial={{ opacity: 0, y: 15 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ 
-              duration: 0.5, 
-              ease: [0.25, 0.1, 0.25, 1],  
-              delay: 0.1 
-            }}
+            transition={{ duration: 0.5, ease: [0.25, 0.1, 0.25, 1], delay: 0.1 }}
             className="w-full h-full"
           >
             {children}
           </motion.div>
         </main>
       </div>
+
+      <AnimatePresence>
+        {isLogoutModalOpen && (
+          <div className="fixed inset-0 z-100 flex items-center justify-center p-4">
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setIsLogoutModalOpen(false)}
+              className="absolute inset-0 bg-slate-900/40 backdrop-blur-sm cursor-pointer"
+            />
+            
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95, y: 10 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.95, y: 10 }}
+              className="relative w-full max-w-100 bg-white/90 backdrop-blur-2xl border border-white/80 rounded-4xl p-8 shadow-2xl overflow-hidden"
+            >
+               <div className="absolute top-0 right-0 w-32 h-32 bg-red-500/10 rounded-full blur-2xl -translate-y-1/2 translate-x-1/2 pointer-events-none" />
+
+               <div className="flex flex-col items-center text-center relative z-10">
+                  <div className="w-16 h-16 bg-red-50 text-red-500 rounded-full flex items-center justify-center mb-5 shadow-sm border border-red-100">
+                     <LogOut className="w-7 h-7 ml-1" />
+                  </div>
+                  
+                  <h3 className="text-xl font-black text-slate-800 mb-2">Keluar dari Dashboard?</h3>
+                  <p className="text-sm text-slate-500 mb-8 leading-relaxed">
+                    Sesi Anda akan diakhiri. Anda harus memasukkan username dan password kembali untuk mengakses panel ini.
+                  </p>
+
+                  <div className="flex items-center w-full gap-3">
+                     <button
+                       onClick={() => setIsLogoutModalOpen(false)}
+                       className="flex-1 py-3 px-4 bg-slate-100 hover:bg-slate-200 text-slate-600 font-bold rounded-xl transition-colors"
+                     >
+                       Batal
+                     </button>
+                     <button
+                       onClick={confirmLogout}
+                       className="flex-1 py-3 px-4 bg-red-500 hover:bg-red-600 text-white font-bold rounded-xl transition-colors shadow-lg shadow-red-500/20"
+                     >
+                       Ya, Keluar
+                     </button>
+                  </div>
+               </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }
